@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>text-joiner</title>
+
+    <style>
+        *, *::before, *::after{
+            box-sizing: border-box;
+        }
+        body, html{
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body{
+            padding: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>text-joiner</h1>
+
+    <div style="display: inline-block; margin-right: 1rem;">
+        <h4>Text 1</h4>
+        <textarea id="text-1" cols="30" rows="5"></textarea>
+    </div>
+
+    <div style="display: inline-block; margin-right: 1rem;">
+        <h4>Text 2</h4>
+        <textarea id="text-2" cols="30" rows="5"></textarea>
+    </div>
+
+    <div style="display: inline-block;">
+        <h4>Text 3</h4>
+        <textarea id="text-3" cols="30" rows="5"></textarea>
+    </div>
+
+    <div style="margin-top: 1rem; border-bottom: 1px solid;"></div>
+
+    <div>
+        <h4>Result</h4>
+        <pre id="result"></pre>
+    </div>
+
+    <script src="dist/text-joiner.js"></script>
+    <script>
+
+        function joinEvent(e) {
+            var arr = [];
+            arr.push(document.getElementById("text-1").value);
+            arr.push(document.getElementById("text-2").value);
+            arr.push(document.getElementById("text-3").value);
+
+            var str = textJoiner.join(arr);
+            console.log(str);
+
+            document.getElementById("result").innerHTML = str;
+        }
+
+        document.getElementById("text-1").addEventListener("input", joinEvent, false);
+        document.getElementById("text-2").addEventListener("input", joinEvent, false);
+        document.getElementById("text-3").addEventListener("input", joinEvent, false);
+    </script>
+</body>
+
+</html>
