@@ -37,7 +37,7 @@
 
     <div style="display: inline-block;">
         <h4>Text 3</h4>
-        <textarea id="text-3" cols="30" rows="5"></textarea>
+        <input id="text-3" type="file" multiple>
     </div>
 
     <div style="margin-top: 1rem; border-bottom: 1px solid;"></div>
@@ -53,18 +53,17 @@
         function joinEvent(e) {
             var arr = [];
             arr.push(document.getElementById("text-1").value);
-            arr.push(document.getElementById("text-2").value);
-            arr.push(document.getElementById("text-3").value);
+            arr.push(document.getElementById("text-2"));
+            arr.push(document.getElementById("text-3"));
 
-            var str = textJoiner.join(arr);
-            console.log(str);
-
-            document.getElementById("result").innerHTML = str;
+            tj.join(arr, function(err, res) {
+                document.getElementById("result").innerHTML = res;
+            });
         }
 
         document.getElementById("text-1").addEventListener("input", joinEvent, false);
         document.getElementById("text-2").addEventListener("input", joinEvent, false);
-        document.getElementById("text-3").addEventListener("input", joinEvent, false);
+        document.getElementById("text-3").addEventListener("change", joinEvent, false);
     </script>
 </body>
 
