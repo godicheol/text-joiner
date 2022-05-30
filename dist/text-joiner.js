@@ -1,20 +1,6 @@
 (function() {
     'use strict';
 
-    var lineBreakers = {
-        "CR": "\r", // Mac(1~9) 0x0D
-        "LF": "\n", // Unix/Linux, Mac(10~) 0x0A
-        "CRLF": "\r\n", // windows 0x0D 0x0A
-    }
-
-    var config = {
-        lineBreaker: "CRLF",
-    }
-
-    function getLineBreaker() {
-        return lineBreakers[config.lineBreaker];
-    }
-
     function getString(arr, cb) {
         var index = arr.length;
         var count = 0;
@@ -28,6 +14,32 @@
                     queue.push(elem);
                     count++;
                     recursiveFn();
+                } else if (elem instanceof File && elem.type != "text/plain") {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        queue.push(e.target.result);
+                        count++;
+                        recursiveFn();
+                    };
+                    reader.onerror = function(e) {
+                        console.error("Load error");
+                        count++;
+                        recursiveFn();
+                    };
+                    reader.readAsText(elem, "UTF-8");
+                } else if (elem instanceof Blob) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        queue.push(e.target.result);
+                        count++;
+                        recursiveFn();
+                    };
+                    reader.onerror = function(e) {
+                        console.error("Load error");
+                        count++;
+                        recursiveFn();
+                    };
+                    reader.readAsText(elem, "UTF-8");
                 } else if (elem instanceof Node && elem.tagName.toUpperCase() == "TEXTAREA") {
                     // <textarea>
                     queue.push(elem.value);
@@ -39,19 +51,16 @@
                     count++;
                     recursiveFn();
                 } else if (elem instanceof Node && elem.tagName.toUpperCase() == "INPUT" && elem.getAttribute("type") == "file") {
+                    // <input type="file">
                     var files = [];
+                    // FileList to Array
                     for (var i = 0; i < elem.files.length; i++) {
-                        // sort multiple files
-                        if (
-                            elem.files[i].type != "text/plain" ||
-                            !elem.files[i] instanceof Blob ||
-                            typeof(elem.files[i].name) == "undefined"
-                        ) {
-                            continue;
+                        if (elem.files[i].type == "text/plain" && elem.files[i] instanceof Blob) {
+                            files.push(elem.files[i]);
                         }
-                        files.push(elem.files[i]);
                     }
                     
+                    // sort multiple files
                     files.sort(function(a, b) {
                         if (!String.localeCompare) {
                             return a.name - b.name;
@@ -101,21 +110,7 @@
 
     var exports = {};
 
-    exports.setLineBreaker = function(str) {
-        switch(str.toUpperCase()) {
-            case "CR":
-                config.lineBreaker = "CR";
-                break;
-            case "LF":
-                config.lineBreaker = "LF";
-                break;
-            case "CRLF":
-                config.lineBreaker = "CRLF";
-                break;
-        }
-    }
-
-    exports.join = function(arr, cb) {
+    exports.join = function(arr, lb, cb) {
         if (!Array.isArray(arr)) {
             console.error("Parameter is not Array.");
             return false;
@@ -130,9 +125,12 @@
             for (var i = 0; i < res.length; i++) {
                 var elem = res[i];
     
-                // is not start
+                // line break
+                // "CR": "\r", // Mac(1~9) 0x0D
+                // "LF": "\n", // Unix/Linux, Mac(10~) 0x0A
+                // "CRLF": "\r\n", // windows 0x0D 0x0A
                 if (i != 0) {
-                    str += getLineBreaker();
+                    str += lb || "\r\n"; // default "CRLF"
                 }
                 
                 // main
@@ -143,8 +141,8 @@
         });
     }
 
-    if (typeof(window.tj) === "undefined") {
-        window.tj = exports;
+    if (typeof(window.textJoiner) === "undefined") {
+        window.textJoiner = exports;
     }
 
     // polyfill

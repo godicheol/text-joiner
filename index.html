@@ -36,8 +36,13 @@
     </div>
 
     <div style="display: inline-block;">
-        <h4>Text 3</h4>
+        <h4>Text 3 (input)</h4>
         <input id="text-3" type="file" multiple>
+    </div>
+
+    <div style="display: inline-block;">
+        <h4>Text 4 (files)</h4>
+        <input id="text-4" type="file" multiple>
     </div>
 
     <div style="margin-top: 1rem; border-bottom: 1px solid;"></div>
@@ -49,6 +54,7 @@
 
     <script src="dist/text-joiner.js"></script>
     <script>
+        var result;
 
         function joinEvent(e) {
             var arr = [];
@@ -56,14 +62,20 @@
             arr.push(document.getElementById("text-2"));
             arr.push(document.getElementById("text-3"));
 
-            tj.join(arr, function(err, res) {
+            for (var i = 0; i < document.getElementById("text-4").files.length; i++) {
+                arr.push(document.getElementById("text-4").files[i]);
+            }
+
+            textJoiner.join(arr, null, function(err, res) {
                 document.getElementById("result").innerHTML = res;
+                result = res;
             });
         }
 
         document.getElementById("text-1").addEventListener("input", joinEvent, false);
         document.getElementById("text-2").addEventListener("input", joinEvent, false);
         document.getElementById("text-3").addEventListener("change", joinEvent, false);
+        document.getElementById("text-4").addEventListener("change", joinEvent, false);
     </script>
 </body>
 
