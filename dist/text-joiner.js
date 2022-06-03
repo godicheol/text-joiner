@@ -111,7 +111,7 @@
     var exports = {};
 
     exports.join = function(arr, lb, cb) {
-        if (!Array.isArray(arr)) {
+        if (!Array.isArray(arr) && !arr instanceof FileList) {
             console.error("Parameter is not Array.");
             return false;
         }

@@ -19,63 +19,128 @@
         body{
             padding: 1rem;
         }
+        table{
+            border-collapse: collapse;
+        }
+        table th,
+        table td{
+            border: 1px solid #7f7f7f;
+            padding: 4px;
+        }
+        .idx{
+            margin: 0 3px;
+        }
     </style>
 </head>
 
 <body>
     <h1>text-joiner</h1>
 
-    <div style="display: inline-block; margin-right: 1rem;">
-        <h4>Text 1</h4>
-        <textarea id="text-1" cols="30" rows="5"></textarea>
-    </div>
+    <input id="file-1" type="file" multiple>
 
-    <div style="display: inline-block; margin-right: 1rem;">
-        <h4>Text 2</h4>
-        <textarea id="text-2" cols="30" rows="5"></textarea>
-    </div>
+    <div style="margin-top: 1rem; border-bottom: 1px solid;"></div>
 
-    <div style="display: inline-block;">
-        <h4>Text 3 (input)</h4>
-        <input id="text-3" type="file" multiple>
-    </div>
-
-    <div style="display: inline-block;">
-        <h4>Text 4 (files)</h4>
-        <input id="text-4" type="file" multiple>
-    </div>
+    <table style="margin-top: 1rem; font-size: 0.8rem;">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Filename</th>
+                <th>Mimetype</th>
+                <th>Size</th>
+            </tr>
+        </thead>
+        <tbody id="result-1">
+        </tbody>
+    </table>
 
     <div style="margin-top: 1rem; border-bottom: 1px solid;"></div>
 
     <div>
         <h4>Result</h4>
-        <pre id="result"></pre>
+        <textarea id="result-2" style="width: 100%; min-height: 256px;" readonly></textarea>
     </div>
 
     <script src="dist/text-joiner.js"></script>
+    <script src="utils/text-comparer.js"></script>
     <script>
-        var result;
+        var _files = [];
 
-        function joinEvent(e) {
-            var arr = [];
-            arr.push(document.getElementById("text-1").value);
-            arr.push(document.getElementById("text-2"));
-            arr.push(document.getElementById("text-3"));
+        function chooseEvt(e) {
+            _files = [];
+            var files = document.getElementById("file-1").files;
 
-            for (var i = 0; i < document.getElementById("text-4").files.length; i++) {
-                arr.push(document.getElementById("text-4").files[i]);
+            
+            for (var i = 0; i < files.length; i++) {
+                _files.push(files[i]);
             }
 
+            _files.sort(function(a, b) {
+                return textComparer.compare(a.name, b.name);
+            });
+           
+            listEvt(_files);
+            joinEvt(_files);
+        }
+
+        function idxUp(i) {
+            if (typeof(_files[i+1]) == "undefined") {
+                return false;
+            }
+            var element = _files.splice(i, 1)[0];
+            _files.splice(i+1, 0, element);
+
+            listEvt(_files);
+            joinEvt(_files);
+        }
+
+        function idxDown(i) {
+            if (typeof(_files[i-1]) == "undefined") {
+                return false;
+            }
+            var element = _files.splice(i, 1)[0];
+            _files.splice(i-1, 0, element);
+
+            listEvt(_files);
+            joinEvt(_files);
+        }
+
+        function listEvt(arr) {
+            var tbody = document.getElementById("result-1");
+            tbody.innerHTML = "";
+            for (var i = 0; i < arr.length; i++) {
+                var f = arr[i];
+                var filename = f.name;
+                var mimeType = f.type;
+                var fileSize = f.size;
+
+                var row = "";
+                row += "<tr>";
+                row += "<td>";
+                row += "<button type='button' onclick='idxDown("+i+")'>-</button>";
+                row += "<span class='idx'>"+(i+1)+"</span>";
+                row += "<button type='button' onclick='idxUp("+i+")'>+</button>";
+                row += "</td>";
+                row += "<td>"+filename+"</td>";
+                row += "<td>"+mimeType+"</td>";
+                row += "<td>"+fileSize+" bytes</td>";
+                row += "</tr>";
+
+                tbody.innerHTML += row;
+            }
+        }
+
+        function joinEvt(arr) {
+            document.getElementById("result-2").value = "";
             textJoiner.join(arr, null, function(err, res) {
-                document.getElementById("result").innerHTML = res;
-                result = res;
+                if (err) {
+                    console.error(err);
+                }
+                console.log(res);
+                document.getElementById("result-2").value = res;
             });
         }
 
-        document.getElementById("text-1").addEventListener("input", joinEvent, false);
-        document.getElementById("text-2").addEventListener("input", joinEvent, false);
-        document.getElementById("text-3").addEventListener("change", joinEvent, false);
-        document.getElementById("text-4").addEventListener("change", joinEvent, false);
+        document.getElementById("file-1").addEventListener("change", chooseEvt, false);
     </script>
 </body>
 
