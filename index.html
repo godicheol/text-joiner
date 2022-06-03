@@ -49,7 +49,13 @@
                 <th>Size</th>
             </tr>
         </thead>
-        <tbody id="result-1">
+        <tbody id="result-1"></tbody>
+        <tbody>
+            <tr>
+                <td colspan="100%" style="text-align: center;">
+                    <button type="button" onclick="downloadEvt()">Download</button>
+                </td>
+            </tr>
         </tbody>
     </table>
 
@@ -134,9 +140,28 @@
             textJoiner.join(arr, null, function(err, res) {
                 if (err) {
                     console.error(err);
+                    return false;
                 }
-                console.log(res);
                 document.getElementById("result-2").value = res;
+            });
+        }
+
+        function downloadEvt() {
+            textJoiner.join(_files, null, function(err, res) {
+                if (err) {
+                    console.error(err);
+                    return false;
+                }
+                var blob = new Blob([res], { type: 'text/plain' });
+                var elem = window.document.createElement('a');
+                var url = window.URL.createObjectURL(blob);
+                elem.href = url;
+                elem.download = "download";
+                elem.style.display = 'none';
+                document.body.appendChild(elem);
+                elem.click();
+                document.body.removeChild(elem);
+                window.URL.revokeObjectURL(url);
             });
         }
 
