@@ -36,7 +36,10 @@
 <body>
     <h1>text-joiner</h1>
 
+    Header: <input id="option-1" type="checkbox" checked>
+
     <input id="file-1" type="file" multiple>
+
 
     <div style="margin-top: 1rem; border-bottom: 1px solid;"></div>
 
@@ -71,11 +74,41 @@
     <script>
         var _files = [];
 
+        function getArray(arr) {
+            var _arr = [];
+            for (var i = 0; i < arr.length; i++) {
+                _arr[i] = arr[i];
+            }
+            if (document.getElementById("option-1").checked) {
+                var headers = [];
+                for (var i = 0; i < _arr.length; i++) {
+                    var width = _arr[i].name.length + 4;
+                    var str = "";
+                    if (i != 0) {
+                        str += "\r\n\r\n";
+                    }
+                    str += "["+(i+1)+"] "+_arr[i].name;
+                    str += "\r\n\r\n";
+                    headers.push({
+                        pos: i,
+                        text: str
+                    });
+                }
+
+                for (var i = headers.length - 1; i >= 0; i--) {
+                    var idx = headers[i].pos;
+                    var text = headers[i].text;
+                    _arr.splice(idx, 0, text);
+                }
+            }
+
+            return _arr;
+        }
+
         function chooseEvt(e) {
             _files = [];
             var files = document.getElementById("file-1").files;
 
-            
             for (var i = 0; i < files.length; i++) {
                 _files.push(files[i]);
             }
@@ -145,7 +178,9 @@
 
         function joinEvt(arr) {
             document.getElementById("result-2").value = "";
-            textJoiner.join(arr, null, function(err, res) {
+
+            var _arr = getArray(arr);
+            textJoiner.join(_arr, null, function(err, res) {
                 if (err) {
                     console.error(err);
                     return false;
@@ -155,7 +190,8 @@
         }
 
         function downloadEvt() {
-            textJoiner.join(_files, null, function(err, res) {
+            var _arr = getArray(_files);
+            textJoiner.join(_arr, null, function(err, res) {
                 if (err) {
                     console.error(err);
                     return false;
@@ -174,6 +210,7 @@
         }
 
         document.getElementById("file-1").addEventListener("change", chooseEvt, false);
+        document.getElementById("option-1").addEventListener("change", chooseEvt, false);
     </script>
 </body>
 
