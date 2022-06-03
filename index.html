@@ -122,9 +122,17 @@
                 var row = "";
                 row += "<tr>";
                 row += "<td>";
-                row += "<button type='button' onclick='idxDown("+i+")'>-</button>";
+                if (i == 0) {
+                    row += "<button type='button' disabled>-</button>";
+                } else {
+                    row += "<button type='button' onclick='idxDown("+i+")'>-</button>";
+                }
                 row += "<span class='idx'>"+(i+1)+"</span>";
-                row += "<button type='button' onclick='idxUp("+i+")'>+</button>";
+                if (i == arr.length-1) {
+                    row += "<button type='button' disabled>+</button>";
+                } else {
+                    row += "<button type='button' onclick='idxUp("+i+")'>+</button>";
+                }
                 row += "</td>";
                 row += "<td>"+filename+"</td>";
                 row += "<td>"+mimeType+"</td>";
