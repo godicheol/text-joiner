@@ -36,10 +36,29 @@
 <body>
     <h1>text-joiner</h1>
 
-    Header: <input id="option-1" type="checkbox" checked>
-
     <input id="file-1" type="file" multiple>
 
+    <div style="margin-top: 1rem; border-bottom: 1px solid;"></div>
+
+    <div style="display: inline-block; vertical-align: top; margin-right: 0.5rem;">
+        <div style="margin: 0.5rem 0;">
+            <input id="option-1" name="option-1" type="checkbox" style="vertical-align: baseline;" checked>
+            <label for="option-1">
+                <strong>Header</strong>
+            </label>
+        </div>
+        <textarea id="header-1" cols="30" rows="10">Name: {name}&#013;&#010;Size: {size}&#013;&#010;Type: {type}&#013;&#010;</textarea>
+    </div>
+
+    <div style="display: inline-block; vertical-align: top; margin-right: 0.5rem;">
+        <div style="margin: 0.5rem 0;">
+            <input id="option-2" name="option-2" type="checkbox" style="vertical-align: baseline;" checked>
+            <label for="option-2">
+                <strong>Footer</strong>
+            </label>
+        </div>
+        <textarea id="footer-1" cols="30" rows="10"></textarea>
+    </div>
 
     <div style="margin-top: 1rem; border-bottom: 1px solid;"></div>
 
@@ -71,6 +90,7 @@
 
     <script src="dist/text-joiner.js"></script>
     <script src="utils/text-comparer.js"></script>
+    <script src="utils/file-size-converter.js"></script>
     <script>
         var _files = [];
 
@@ -79,26 +99,55 @@
             for (var i = 0; i < arr.length; i++) {
                 _arr[i] = arr[i];
             }
-            if (document.getElementById("option-1").checked) {
-                var headers = [];
+
+            var isHeader = document.getElementById("option-1").checked;
+            var isFooter = document.getElementById("option-2").checked;
+            
+            // header
+            var hearderText = document.getElementById("header-1").value;
+            var footerText = document.getElementById("footer-1").value;
+            var queue = [];
+            if (isHeader || isFooter) {
                 for (var i = 0; i < _arr.length; i++) {
-                    var width = _arr[i].name.length + 4;
-                    var str = "";
-                    if (i != 0) {
-                        str += "\r\n\r\n";
+                    var filename = _arr[i].name;
+                    var fileSize = fileSizeConverter.humanize(_arr[i].size);
+                    var mimeType = _arr[i].type;
+
+                    var headerString = isHeader ? hearderText : undefined;
+                    if (isHeader) {
+                        headerString = headerString.split(/{name}/g).join(filename);
+                        headerString = headerString.split(/{size}/g).join(fileSize);
+                        headerString = headerString.split(/{type}/g).join(mimeType);
                     }
-                    str += "["+(i+1)+"] "+_arr[i].name;
-                    str += "\r\n\r\n";
-                    headers.push({
+
+                    var footerString = isFooter ? footerText : undefined;
+                    if (isFooter) {
+                        footerString = footerString.split(/{name}/g).join(filename);
+                        footerString = footerString.split(/{size}/g).join(fileSize);
+                        footerString = footerString.split(/{type}/g).join(mimeType);
+                    }
+
+                    queue.push({
                         pos: i,
-                        text: str
+                        header: headerString,
+                        footer: footerString,
                     });
                 }
+            }
 
-                for (var i = headers.length - 1; i >= 0; i--) {
-                    var idx = headers[i].pos;
-                    var text = headers[i].text;
-                    _arr.splice(idx, 0, text);
+            var pos = 0;
+            for (var i = 0; i < queue.length; i++) {
+                var idx = queue[i].pos;
+                var header = queue[i].header;
+                var footer = queue[i].footer;
+
+                if (header) {
+                    _arr.splice(idx + pos, 0, header);
+                    pos++;
+                }
+                if (footer) {
+                    pos++;
+                    _arr.splice(idx + pos, 0, footer);
                 }
             }
 
@@ -190,27 +239,42 @@
         }
 
         function downloadEvt() {
-            var _arr = getArray(_files);
-            textJoiner.join(_arr, null, function(err, res) {
-                if (err) {
-                    console.error(err);
-                    return false;
-                }
-                var blob = new Blob([res], { type: 'text/plain' });
-                var elem = window.document.createElement('a');
-                var url = window.URL.createObjectURL(blob);
-                elem.href = url;
-                elem.download = "download";
-                elem.style.display = 'none';
-                document.body.appendChild(elem);
-                elem.click();
-                document.body.removeChild(elem);
-                window.URL.revokeObjectURL(url);
-            });
+            var str = document.getElementById("result-1").value;
+            var blob = new Blob([str], { type: 'text/plain' });
+            var elem = window.document.createElement('a');
+            var url = window.URL.createObjectURL(blob);
+            elem.href = url;
+            elem.download = "download";
+            elem.style.display = 'none';
+            document.body.appendChild(elem);
+            elem.click();
+            document.body.removeChild(elem);
+            window.URL.revokeObjectURL(url);
+
+            // var _arr = getArray(_files);
+            // textJoiner.join(_arr, null, function(err, res) {
+            //     if (err) {
+            //         console.error(err);
+            //         return false;
+            //     }
+            //     var blob = new Blob([res], { type: 'text/plain' });
+            //     var elem = window.document.createElement('a');
+            //     var url = window.URL.createObjectURL(blob);
+            //     elem.href = url;
+            //     elem.download = "download";
+            //     elem.style.display = 'none';
+            //     document.body.appendChild(elem);
+            //     elem.click();
+            //     document.body.removeChild(elem);
+            //     window.URL.revokeObjectURL(url);
+            // });
         }
 
         document.getElementById("file-1").addEventListener("change", chooseEvt, false);
         document.getElementById("option-1").addEventListener("change", chooseEvt, false);
+        document.getElementById("option-2").addEventListener("change", chooseEvt, false);
+        document.getElementById("header-1").addEventListener("input", chooseEvt, false);
+        document.getElementById("footer-1").addEventListener("input", chooseEvt, false);
     </script>
 </body>
 
