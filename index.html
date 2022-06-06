@@ -75,8 +75,10 @@
         <tbody>
             <tr>
                 <td colspan="100%" style="text-align: center;">
-                    <input id="filename-1" type="text" value="" placeholder="Filename...">
-                    <button type="button" onclick="downloadEvt()">Download</button>
+                    <div style="display: flex; flex-direction: row;">
+                        <input id="filename-1" style="flex: auto;" type="text" value="" placeholder="Filename...">
+                        <button type="button" style="flex: initial; margin-left: 4px;" onclick="downloadEvt()">Download</button>
+                    </div>
                 </td>
             </tr>
         </tbody>
