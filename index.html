@@ -75,6 +75,7 @@
         <tbody>
             <tr>
                 <td colspan="100%" style="text-align: center;">
+                    <input id="filename-1" type="text" value="" placeholder="Filename...">
                     <button type="button" onclick="downloadEvt()">Download</button>
                 </td>
             </tr>
@@ -170,6 +171,19 @@
             joinEvt(_files);
         }
 
+        function setFilename(str) {
+            document.getElementById("filename-1").value = str;
+        }
+        
+        function getFilename() {
+            var str = document.getElementById("filename-1").value;
+            if (str.trim() != "") {
+                return str.trim();
+            } else {
+                return undefined;
+            }
+        }
+
         function idxUp(i) {
             if (typeof(_files[i+1]) == "undefined") {
                 return false;
@@ -199,7 +213,7 @@
                 var f = arr[i];
                 var filename = f.name;
                 var mimeType = f.type;
-                var fileSize = f.size;
+                var fileSize = fileSizeConverter.humanize(f.size);
 
                 var row = "";
                 row += "<tr>";
@@ -218,7 +232,7 @@
                 row += "</td>";
                 row += "<td>"+filename+"</td>";
                 row += "<td>"+mimeType+"</td>";
-                row += "<td>"+fileSize+" bytes</td>";
+                row += "<td>"+fileSize+"</td>";
                 row += "</tr>";
 
                 tbody.innerHTML += row;
@@ -244,7 +258,7 @@
             var elem = window.document.createElement('a');
             var url = window.URL.createObjectURL(blob);
             elem.href = url;
-            elem.download = "download";
+            elem.download = getFilename() || "download";
             elem.style.display = 'none';
             document.body.appendChild(elem);
             elem.click();
@@ -261,7 +275,7 @@
             //     var elem = window.document.createElement('a');
             //     var url = window.URL.createObjectURL(blob);
             //     elem.href = url;
-            //     elem.download = "download";
+            //     elem.download = getFilename() || "download";
             //     elem.style.display = 'none';
             //     document.body.appendChild(elem);
             //     elem.click();
